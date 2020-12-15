@@ -314,4 +314,3 @@ ggplot(elbow_df, aes(x = k, y = tot_withinss)) +
 
 
 ####################
-#meine Mausi
