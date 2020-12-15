@@ -166,7 +166,7 @@ gaming_k_model
 count(gaming_k_model, cluster)
 
 
-plot(gaming_k_model)
+#plot(gaming_k_model)
 
 #Ideale anzahl der Cluster
 ###############################
@@ -293,14 +293,14 @@ ggplot(lineup_km2, aes(x = "x", y = "y", color = factor(cluster))) +
 library(purrr)
 
 # Use map_dbl to run many models with varying value of k (centers)
-tot_withinss <- map_dbl(1:7,  function(k){
-  model <- kmeans(x = gaming_mean, centers = k)
+tot_withinss <- map_dbl(1:10,  function(k){
+  model <- kmeans(x = gaming_k_model, centers = k)
   model$tot.withinss
 })
 
 # Generate a data frame containing both k and tot_withinss
 elbow_df <- data.frame(
-  k = 1:7,
+  k = 1:10,
   tot_withinss = tot_withinss
 )
 
@@ -314,3 +314,4 @@ ggplot(elbow_df, aes(x = k, y = tot_withinss)) +
 
 
 ####################
+#meine Mausi
