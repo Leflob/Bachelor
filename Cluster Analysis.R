@@ -34,7 +34,7 @@ gaming_c = as.matrix(data)
 
 #logischerweise ändert das nichts an den Clustern die R findet -.-
 
-#für die Kategorien könnte man den mean jeder Person aller Fragen einer Kategorien ermitteln und 
+#fÃ¼r die Kategorien könnte man den mean jeder Person aller Fragen einer Kategorien ermitteln und 
 #von dort aus mit dem mean weiter rechnen. 
 
 #wie bekomme ich den mean für jede Person in den Fragekategorien?
@@ -75,9 +75,9 @@ count(gamers_k2_complete, cluster)
 #Die Werte sehen schon etwas besser verteilt aus, allerdings ergeben sich immernoch deutliche Diskepanzen.
 #Vorallem Cluster 5 und 1 weichen stark von der Studie ab
 
-##Verändert man die anzahl der Cluster k=x so fällt auf das ab einer Cluster Anzahl von 3
+##VerÃ¤ndert man die anzahl der Cluster k=x so fÃ¤llt auf das ab einer Cluster Anzahl von 3
 ##R immer ein CLuster "unterbesetzt". Bei k=3,4,5,6 (vmtl. auch den Weiteren) ist der letzte CLuster immer 
-##mit 29 Beobachtungen gefüllt. Bei k=6 sehen die Zuteilungen, denen der Studie schon sehr ähnlich.
+##mit 29 Beobachtungen gefüllt. Bei k=6 sehen die Zuteilungen, denen der Studie schon sehr Ã¤hnlich.
 ## Es stört jedoch das Cluster Nr.6 mit 29 Beobachtungen.
 
 ##Woher kommt das und warum macht R das?
@@ -148,7 +148,7 @@ emotional1/147
 
 #Es stellt sich heraus, dass auch bei Ward.D2 immer ein Cluster ab einer Anzahl von 
 #4 Clustern und mehr mit 42 Beobachtungen gefüllt wird. Analysiert man die Fälle in 
-#Cluster 5 so fällt auf, dass es sich um Perosonen handelt, die i.d.R zu allen Fragen 
+#Cluster 5 so fällt auf, dass es sich um Personen handelt, die i.d.R zu allen Fragen 
 #nur niedrige werte, also ablehnung bekundet haben handelt.
 #####
 
@@ -165,7 +165,7 @@ gaming_k_model
 
 count(gaming_k_model, cluster)
 
-
+fviz_cluster(list(data = gaming_mean, cluster = gaming_k$cluster))
 #plot(gaming_k_model)
 
 #Ideale anzahl der Cluster
@@ -185,7 +185,7 @@ barplot(wss)
 
 
 
-#k-means Clustern würde in diesem Fall wohl 2 Cluster empfehlen, wie kommt man auf 5 ?
+#k-means Clustern wÃ¼rde in diesem Fall wohl 2 Cluster empfehlen, wie kommt man auf 5 ?
 
 #####
 
@@ -224,8 +224,8 @@ points(predict(analyse_gaming, km6$centers)[, 1:2], col = 1:3, pch = 3,
        + cex = 3)
 
 
-#Ab fünf macht es nach den Darstellungen her keinen Sinn mehr, 4 cluster sind 
-#nach den Plots eine valide Option mit der höchsten Anzahl an clustern
+#Ab fÃ¼nf macht es nach den Darstellungen her keinen Sinn mehr, 4 cluster sind 
+#nach den Plots eine valide Option mit der hÃ¶chsten Anzahl an clustern
 
 #install.packages("plot.kmeans.R")
 
@@ -265,7 +265,8 @@ plot(hc_average, main = 'Average Linkage')
 #install.packages("factoextra")
 
 library(factoextra)
-
+library(dendextend)
+library(dplyr)
 
 ##########################
 #kmeans model mit Datacamp
@@ -280,10 +281,15 @@ clust_km2 <- print(model_km2)
 
 # Create a new data frame appending the cluster assignment
 lineup_km2 <- mutate(gaming_mean, cluster = model_km2$cluster)
-
+lineup_km2
 # Plot the positions of the players and color them using their cluster
-ggplot(lineup_km2, aes(x = "x", y = "y", color = factor(cluster))) +
-  geom_point()
+ggplot(lineup_km2,aes(x = X, y = Y, color = factor(cluster))) + 
+  geom_point() 
+lineup_km2
+
+#R hat ein Problem mit der Darstellung von mehereren Variablen hier. Die 
+#Frage ist, was muss ich der x und y- Achse für ein Objekt zuweisen, damit ich 
+#einen Plot bekomme vergleichbar mit dem Fußballfeld aus Datacamp
 
 
 ####################
@@ -314,3 +320,48 @@ ggplot(elbow_df, aes(x = k, y = tot_withinss)) +
 
 
 ####################
+
+#Silouette
+###################
+#Die Werte die am nächsten bei 1 sind sind die Besten. 
+#heir würde tatsächlich k=5 nach dieser Methode das beste k sein.
+
+
+library(cluster)
+pam_k3 <- pam(gaming_mean, k = 3)
+pam_k3$silinfo$widths
+
+library(purrr)
+sil_width <- map_dbl(2:10,  function(k)
+  {  model <- pam(x = gaming_mean, k = k) 
+  model$silinfo$avg.width
+  })
+sil_df <- data.frame(  k = 2:10,  sil_width = sil_width)
+
+print(sil_df)
+
+plot(sil_df)
+
+
+
+#vielleicht über die Cluster center mehr Erkenntnis
+##########
+
+clusters = cutree(hclust(dist(gaming_mean)), k=5) # get 5 clusters
+
+# function to find medoid in cluster i
+clust_center = clust.centroid = function(i, dat, clusters) {
+  ind = (clusters == i)
+  colMeans(dat[ind,])
+}
+clust_center
+
+
+
+
+
+
+
+
+
+
