@@ -25,6 +25,7 @@ wardCluster = hclust(dist_players, method = "ward.D2")
 wardCluster
 
 
+
 #Visualisierung der CLuster mit verschiedenen k
 clust = cutree(wardCluster, k=2)
 fviz_cluster(list(data = gaming_mean, cluster = clust))
@@ -81,9 +82,30 @@ plot(sil_df)
 #welche die Studie (wie auch immer) ebenfalls herausgefunden hat.
 
 
+#elbow method
+################
+
+fviz_nbclust(gaming_mean, FUN = hcut, method = "wss")
+
+#keine eindeutige Bestimmung hierüber möglich
+
+
+#####
+#Gap statistics Method
+
+gap_stat <- clusGap(gaming_mean, FUN = hcut, nstart = 1000, K.max = 10, B = 50)
+fviz_gap_stat(gap_stat)
+
+
 #Nun muss die Cluster-Zugehörigkeit und die Zentren gefunden werden.
 #Dazu non-hirarchical clustering, hier: k-means clustering
 
+####UNtersuche die Stärke der Clustering Struktur mit agnes
+
+hc2 = agnes(gaming_mean, method = "ward")
+hc2$ac
+
+pltree(hc2, cex = 0.6, hang = -1, main = "Dendogram of agnes")
 
 
 # Build a kmeans model
