@@ -1,6 +1,6 @@
 #Hier sollen die Schritte der Studie in chronologischer Reihenfolge nachvollzogen werden
 
-#Die Studie beginnt mit der einteilung der Fragen in "Überkategorien"
+#Die Studie beginnt mit der Einteilung der Fragen in "Überkategorien"
 #Diesen Schritt lasse ich an dieser Stelle vorerst aus. 
 #Ich gehe weiter mit den Ergebnissen der Analyse der Studie vor.
 #In Excel habe ich eine Tabelle erstellt, welche die Antworten der Befragten (1:5) summiert.
