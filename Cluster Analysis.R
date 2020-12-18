@@ -154,7 +154,7 @@ emotional1/147
 
 #Non hirarchical clustering (k-means)
 ###########
-
+library(dplyr)
 
 gaming_k = kmeans(gaming_mean, centers = 5)
 gaming_k
@@ -165,13 +165,14 @@ gaming_k_model
 
 count(gaming_k_model, cluster)
 
+library(factoextra)
 fviz_cluster(list(data = gaming_mean, cluster = gaming_k$cluster))
 #plot(gaming_k_model)
 
 #Ideale anzahl der Cluster
 ###############################
 
-
+km2 <- kmeans(gaming_mean, 2, nstart = 20)
 km3 <- kmeans(gaming_mean, 3, nstart = 20)
 km4 <- kmeans(gaming_mean, 4, nstart = 20)
 km5 <- kmeans(gaming_mean, 5, nstart = 20)

@@ -27,6 +27,8 @@ wardCluster
 
 
 #Visualisierung der CLuster mit verschiedenen k
+library(factoextra)
+library(ggplot2)
 clust = cutree(wardCluster, k=2)
 fviz_cluster(list(data = gaming_mean, cluster = clust))
 
@@ -53,7 +55,7 @@ plot(dend_5)
 
 #Silouette
 ###################
-#Die Werte die am nächsten bei 1 sind sind die Besten. 
+#Die Werte die am n?chsten bei 1 sind, sind die Besten. 
 
 library(cluster)
 pam_k3 <- pam(gaming_mean, k = 2)
@@ -88,6 +90,31 @@ plot(sil_df)
 fviz_nbclust(gaming_mean, FUN = hcut, method = "wss")
 
 #keine eindeutige Bestimmung hierüber möglich
+#mit der Methode von Datacamp ließe sich hingegen folgender Plot erzeugen:
+
+library(purrr)
+
+# Use map_dbl to run many models with varying value of k (centers)
+tot_withinss <- map_dbl(1:10,  function(k){
+  model <- kmeans(x = gaming_k_model, centers = k)
+  model$tot.withinss
+})
+
+# Generate a data frame containing both k and tot_withinss
+elbow_df <- data.frame(
+  k = 1:10,
+  tot_withinss = tot_withinss
+)
+
+elbow_df
+
+# Plot the elbow plot
+ggplot(elbow_df, aes(x = k, y = tot_withinss)) +
+  geom_line() +
+  scale_x_continuous(breaks = 1:7)
+
+#Wenn auch hier wieder das Argument der konzeptionellen Umstaende beruecksichtigt wird und
+#dementsprechend k = 2 ignoriert wird, so ist k = 5 die beste Alternative.
 
 
 #####
@@ -100,7 +127,7 @@ fviz_gap_stat(gap_stat)
 #Nun muss die Cluster-Zugehörigkeit und die Zentren gefunden werden.
 #Dazu non-hirarchical clustering, hier: k-means clustering
 
-####UNtersuche die Stärke der Clustering Struktur mit agnes
+####Untersuche die Stärke der Clustering Struktur mit agnes
 
 hc2 = agnes(gaming_mean, method = "ward")
 hc2$ac
@@ -117,6 +144,7 @@ model_km2 <- kmeans(gaming_mean, centers = 5, nstart = 1)
 clust_km2 <- print(model_km2)
 
 # Create a new data frame appending the cluster assignment
+library(dplyr)
 gaming_km2 <- mutate(gaming_mean, cluster = model_km2$cluster)
 gaming_km2
 
