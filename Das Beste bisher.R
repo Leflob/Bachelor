@@ -54,7 +54,7 @@ plot(1:10, betweenss_toss, type = "b", ylab = "Between SS / Total SS", xlab = "k
 library(GPArotation)
 #install.packages("Rcsdp")
 library(Rcsdp)
-fa.results <- fa(g_scaled, nfactors=7, rotate="varimax",
+fa.results <- fa(g_scaled, nfactors=7, n.iter = 8, rotate="varimax",
                  scores=TRUE, fm="alpha", oblique.scores=FALSE, max.iter=25)
 str(fa.results)
 fa.results$loadings
@@ -62,7 +62,6 @@ fa.results$loadings
 fa.diagram(fa.results ,fa.results$loadings, cut = 0.2, sort = TRUE)
 
 fa.results$scores
-
 
 gamer_scores = fa.results$scores
 
@@ -149,6 +148,7 @@ cl_gaming <- mutate(gaming_raw, cluster = clust_gamer$cluster)
 cl_gaming
 count(cl_gaming, cluster)
 
+kmeans_gamer$centers
 
 str(kmeans_gamer)
 gamingList = as.data.frame(kmeans_gamer$centers)
@@ -166,7 +166,7 @@ spider_web = data.frame(
   economic = c(1.2,-1.2, gamingList$alpha7),
   identification = c(1.2,-1.2, gamingList$alpha3),
   emotional = c(1.2,-1.2, gamingList$alpha4),
-  row.names = c("max", "min", "satisfaction seekers", "performers", "social aesthetes", "economics", "egocentrics")
+  row.names = c("max", "min", "performers", "social aesthetes", "economic aesthetes", "egocentrics", "satisfaction seekers")
 )
 
 
@@ -203,3 +203,4 @@ legend(x=1.2,
        legend = rownames(spider_web[-c(1,2),]), 
        bty = "n", pch=20 , col = colors_line, cex = 1.05, pt.cex = 3)
 ###################
+
