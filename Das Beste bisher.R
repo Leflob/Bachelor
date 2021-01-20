@@ -4,7 +4,6 @@
 #Factor Analysis
 ##################
 #
-#Um Overfitting zu vermeiden wird der Datensatz in zwei gleich große Teile zerlegt.
 #Einer dient der exploratory und einer der confirmatory factor analysis.
 #Da die Studie dies nicht tut, werden die Methode zum Vergleich auch auf den gesamte Datensatz angewand
 
@@ -24,41 +23,12 @@ g_scaled = scale(gaming_raw)
 describe(gaming_raw)
 summary(gaming_raw)
 
+#Correlationsmatrix
 
-#Teilen des DAtensatzes in Exploratory (EFA) und Confirmatory (CFA)
-######
-# Establish two sets of indices to split the dataset
-N <- nrow(gaming_raw)
-indices <- seq(1, N)
-indices_EFA <- sample(indices, floor((.5 * N)))
-indices_CFA <- indices[!(indices %in% indices_EFA)]
+lowerCor(gaming_raw)
 
-# Use those indices to split the dataset into halves for EFA and CFA
-gaming_EFA <- gaming_raw[indices_EFA,]
-gaming_CFA <- gaming_raw[indices_CFA,]
-
-
-# Calculate the correlation matrix
-gaming_EFA_cor <- cor(gaming_EFA, use = "pairwise.complete.obs")
-
-# use of the correlation matrix to calculate eigenvalues
-eigenvals <- eigen(gaming_EFA_cor)
-
-# Look at the eigenvalues returned
-eigenvals$values
-
-
-# Calculate the correlation matrix first
-gaming_EFA_cor <- cor(gaming_EFA, use = "pairwise.complete.obs")
-
-#SCREE-PLOT
-#Faktoren mit Eigenwerten >1 sind ein gängiges Kriterium zur Auswahl der Anzahl
-#von Faktoren.
-scree(gaming_EFA_cor, factors = FALSE, main = "geteilter Datensatz")
-
-
-#gesamter Datensatz
-
+#Eigenvalue-One Criterion
+#####
 
 # Calculate the correlation matrix
 gaming_full<- cor(gaming_raw, use = "pairwise.complete.obs")
@@ -74,8 +44,6 @@ eigenvals1$values
 #Faktoren mit Eigenwerten >1 sind ein gängiges Kriterium zur Auswahl der Anzahl
 #von Faktoren.
 scree(gaming_full, factors = FALSE, main = "ganzer Datensatz")
-
-
 ######
 
 
@@ -129,6 +97,20 @@ wardCluster
 
 
 tail(wardCluster$height)
+#Prozentuale Änderung
+
+#1
+(31.14325/24.35811)-1
+#2
+(24.35811/23.29069)-1
+#3
+(23.29069/22.01693)-1
+
+#4
+(22.01693/18.99776)-1
+#5
+(18.99776/17.82225)-1
+
 #die letzten 5 Werte verliern noch recht viel Höhe. Ab dem 6ten Cluster ist der 
 #Höhenverlust unter 1, vielleicht ist das ein Idikator (agglomeration schedule?)
 #####
@@ -138,7 +120,8 @@ tail(wardCluster$height)
 #####
 #elbow method (per Hand)
 library(purrr)
-
+library(ggplot2)
+library(factoextra)
 # Use map_dbl to run many models with varying value of k
 tot_withinss <- map_dbl(1:10,  function(k){
   model <- kmeans(x = gamer_scores, centers = k)
@@ -159,7 +142,7 @@ ggplot(elbow_df, aes(x = k, y = tot_withinss)) +    #Plot the elbow plot
 
 
 #Weitere statistische Methoden 
-
+library(factoextra)
 #elbow plot (automatisch)
 fviz_nbclust(gamer_scores, kmeans, method = "wss") +
   geom_vline(xintercept = 5, linetype = 2)+
@@ -177,7 +160,8 @@ fviz_nbclust(gamer_scores, kmeans, method = "silhouette")+
 # recommended value: nboot= 500 for your analysis.
 # Use verbose = FALSE to hide computing progression.
 set.seed(123)
-fviz_nbclust(gamer_scores, kmeans, nstart = 25,  method = "gap_stat", nboot = 50)+
+fviz_nbclust(gamer_scores, kmeans, nstart = 25,  method = "gap_stat", nboot = 50) +
+  geom_vline(xintercept = 5, linetype = 2)+
   labs(subtitle = "Gap statistic method")
 #ebenfalls Maximum bei 5
 #####
@@ -187,7 +171,7 @@ fviz_nbclust(gamer_scores, kmeans, nstart = 25,  method = "gap_stat", nboot = 50
 #####
 #Mit diesem Package können auch mehrdimensionale Variablen auf zweidimensionalem 
 #Raum dargestellt werden. Ob es hier sinnvoll ist, ist fraglich.
-library(factoextra)
+
 library(ggplot2)
 clust = cutree(wardCluster, k=5)
 fviz_cluster(list(data = gamer_scores, cluster = clust))
@@ -207,7 +191,7 @@ dend_players <- as.dendrogram(wardCluster)
 dend_5 <- color_branches(dend_players, k = 5)
 
 plot(dend_5)
-
+plot(dend_players)
 #Alleine aus dem Dendogram wird nicht ersichtlich was die beste Clusteranzahl ist
 #mit k=5 (eingefärbt) lässt sich aber die errechnete Struktur ideal visualisieren
 #####
@@ -232,6 +216,16 @@ kmeans_gamer$centers
 
 str(kmeans_gamer)
 gamingList = as.data.frame(kmeans_gamer$centers)
+
+
+#visualisierung
+
+
+set.seed(99085)
+library(animation)
+animation = as.data.frame(gamer_scores)
+kmeans.ani(animation[3:4], centers = 5, 
+           hints = c("Move centers!", "Find cluster?"), pch = 1:5, col = 1:5)
 #####
 
 
@@ -284,6 +278,79 @@ legend(x=1.2,
        y=1.35, 
        legend = rownames(spider_web[-c(1,2),]), 
        bty = "n", pch=20 , col = colors_line, cex = 1.05, pt.cex = 3)
+
+#Wer kauft was?
+
+library(readxl)
+dat = read_excel(
+  "C:/Users/Florian/Desktop/WS 20-21/Bachelorarbeit/Anfrage 3 What drives Gamers to buy virtual goods/format.xlsx",
+  na = "NA",
+  sheet = 2, range = "A1:AB1097", col_names = TRUE)
+data= na.omit(dat)
+
+pur = subset(data, select = c("pur"))
+pur
+data_raw = subset(data, select = c("x1","x2","x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10", "x11", "x12", "x13", "x14", "x15", "x16", "x17", "x18", "x19", "x20", "x21", "x22", "x23", "x24", "x25", "x26","x27"))
+data_raw
+
+
+
+library(GPArotation)
+#install.packages("Rcsdp")
+library(Rcsdp)
+fa.results <- fa(data_raw, nfactors=7, n.iter = 8, rotate="varimax",
+                 scores=TRUE, fm="alpha", oblique.scores=FALSE, max.iter=25)
+
+data_scores = fa.results$scores #Im Weiteren wird nur noch mit den scores gearbeitet
+
+
+
+library(dplyr)
+pur_gaming <- mutate(gaming_raw, cluster = clust_gamer$cluster, pur)
+pur_gaming
+count(cl_gaming, cluster)
+
+
+cl1 <- subset(pur_gaming, cluster == "1")
+c1 = subset(cl1, select = "pur")
+
+cl2 <- subset(pur_gaming, cluster == "2")
+c2 = subset(cl2, select = "pur")
+
+cl3 <- subset(pur_gaming, cluster == "3")
+c3 = subset(cl3, select = "pur")
+
+cl4 <- subset(pur_gaming, cluster == "4")
+c4 = subset(cl4, select = "pur")
+
+cl5 <- subset(pur_gaming, cluster == "5")
+c5 = subset(cl5, select = "pur")
+
+#Häufigkeiten
+#c1 %>% count(pur)
+(56/(56+116))*100
+100-(56/(56+116))*100
+
+#c2 %>% count(pur)
+(52/(52+127))*100
+100-(52/(52+127))*100
+
+#c3 %>% count(pur)
+(78/(78+181))*100
+100-(78/(78+181))*100
+
+#c4 %>% count(pur)
+(59/(59+152))*100
+100-(59/(59+152))*100
+
+#c5 %>% count(pur)
+(83/(83+136))*100
+100-(83/(83+136))*100
+
+#####
+
+  
+  
 #####
 
 
@@ -348,3 +415,35 @@ plot(1:30, betweenss_toss, type = "b", ylab = "Between SS / Total SS", xlab = "k
 #####
 
 
+
+#Teilen des DAtensatzes in Exploratory (EFA) und Confirmatory (CFA)
+######
+# Establish two sets of indices to split the dataset
+N <- nrow(gaming_raw)
+indices <- seq(1, N)
+indices_EFA <- sample(indices, floor((.5 * N)))
+indices_CFA <- indices[!(indices %in% indices_EFA)]
+
+# Use those indices to split the dataset into halves for EFA and CFA
+gaming_EFA <- gaming_raw[indices_EFA,]
+gaming_CFA <- gaming_raw[indices_CFA,]
+
+
+# Calculate the correlation matrix
+gaming_EFA_cor <- cor(gaming_EFA, use = "pairwise.complete.obs")
+
+# use of the correlation matrix to calculate eigenvalues
+eigenvals <- eigen(gaming_EFA_cor)
+
+# Look at the eigenvalues returned
+eigenvals$values
+
+
+# Calculate the correlation matrix first
+gaming_EFA_cor <- cor(gaming_EFA, use = "pairwise.complete.obs")
+
+#SCREE-PLOT
+#Faktoren mit Eigenwerten >1 sind ein gängiges Kriterium zur Auswahl der Anzahl
+#von Faktoren.
+scree(gaming_EFA_cor, factors = FALSE, main = "geteilter Datensatz")
+#####
